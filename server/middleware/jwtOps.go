@@ -38,7 +38,7 @@ func ValidateJWT(tokenString string) (uint, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Convert the user_id to uint
+		
 		userID, ok := claims["user_id"].(float64)
 		if !ok {
 			return 0, fmt.Errorf("invalid user_id in token")

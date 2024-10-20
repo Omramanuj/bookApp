@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import  FileUpload  from '../components/fileUpload';
+import UserInfo  from '../components/userInfo';
+
 
 export default function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,7 +18,7 @@ export default function Dashboard() {
     try {
       const response = await fetch('http://localhost:8080/user', {
         method: 'GET',
-        credentials: 'include', 
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -37,9 +41,7 @@ export default function Dashboard() {
       });
 
       if (response.ok) {
-        // Clear any stored user data
         localStorage.removeItem('user');
-        // Redirect to login page
         navigate('/login');
       } else {
         throw new Error('Logout failed');
@@ -63,12 +65,10 @@ export default function Dashboard() {
       <div className="relative py-3 sm:max-w-xl sm:mx-auto">
         <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
           <h1 className="text-2xl font-semibold mb-5">Dashboard</h1>
-          <div className="mb-5">
-            <h2 className="text-xl mb-2">User Information:</h2>
-            <pre className="bg-gray-100 p-3 rounded overflow-auto">
-              {JSON.stringify(userData, null, 2)}
-            </pre>
-          </div>
+
+          <UserInfo userData={userData} />
+          <FileUpload  />
+
           <button
             onClick={handleLogout}
             className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"

@@ -67,22 +67,46 @@ func LoginOrRegister(c *fiber.Ctx) error {
 }
 
 func GetUser(c *fiber.Ctx) error {
-    cookie := c.Cookies("jwt")
+	cookie := c.Cookies("jwt")
 
-    userID, err := middleware.ValidateJWT(cookie)
-    if err != nil {
-        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
-    }
+	userID, err := middleware.ValidateJWT(cookie)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
 
-    var user models.User
-    if err := database.ConnectDB().First(&user, userID).Error; err != nil {
-        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-    }
+	var user models.User
+	if err := database.ConnectDB().First(&user, userID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+	}
 
-    return c.JSON(user)
+	return c.JSON(user)
 }
 
 func Logout(c *fiber.Ctx) error {
 	c.ClearCookie("jwt")
 	return c.JSON(fiber.Map{"message": "Logout successful"})
+}
+
+func GetBookURL(c *fiber.Ctx) error {
+
+	type request struct {
+		FileName string `json:"filename"`
+	}
+
+	var req request
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
+	}
+
+
+	presignedUrl, err := middleware.GetPresignURL(req.FileName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate presigned URL"})
+	}
+
+	return c.JSON(fiber.Map{
+		"preSignedUrl": presignedUrl,
+		"fileName":     req.FileName,
+	})
+	
 }
