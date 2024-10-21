@@ -1,8 +1,6 @@
+import React, { useState } from 'react';
 
-import React, { useState, useEffect } from 'react';
 const FileUpload = () => {
-
-
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
 
@@ -13,42 +11,64 @@ const FileUpload = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if(file){
+            setUploadStatus('Uploading...');
             const fileType = file.name.endsWith('.epub') ? 'application/epub+zip' : 'application/pdf';
             try {
-                const response = await fetch('http://localhost:8080/book_url',{
-                    method : 'POST',
-                    headers:{
-                        'Content-Type':'application/json',
+                const response = await fetch('http://localhost:8080/book_url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({filename: file.name})
+                    body: JSON.stringify({ filename: file.name })
                 });
-                const data= await response.json();
-                if(!response.ok){
-                    throw new Error (data.message);
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message);
                 }
                 
-                const uploadResponse = await fetch(data.preSignedUrl,{
+                console.log(data);
+                const uploadResponse = await fetch(data.preSignedUrl, {
                     method: 'PUT',
-                    body:file,
-                    headers:{
-                        'Content-Type':fileType
+                    body: file,
+                    headers: {
+                        'Content-Type': fileType
                     },
                 });
 
-                if(!uploadResponse.ok){
+                if (!uploadResponse.ok) {
                     throw new Error(uploadResponse.statusText);
                 }
                 console.log(uploadResponse);
-                alert ('File uploaded successfully!');
+                const url = uploadResponse.url;
 
+                const saveBookResponse = await fetch('http://localhost:8080/save_book', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  credentials: 'include', 
+                  body: JSON.stringify({ url: url ,
+                    filename: file.name,
+                    url:url
+                  })
+                });
+               
+                const saveBookResult = await saveBookResponse.json();
+                if (!saveBookResponse.ok) {
+                  throw new Error(saveBookResult.message);
+                }
+
+                setUploadStatus('File uploaded successfully!');
+                alert('File uploaded successfully!');
+            } catch (error) {
+                console.log(`Error uploading file: ${error.message}`);
+                setUploadStatus(`Error: ${error.message}`);
             }
-            catch(error){
-            console.log(`Error uploading file: ${error.message}`);
-            }
+        } else {
+            setUploadStatus('Please select a file to upload.');
         }
     };
 
-  
     return (
       <div className="mb-5">
         <h2 className="text-xl mb-2">Upload a Book (EPUB):</h2>
@@ -65,8 +85,8 @@ const FileUpload = () => {
           >
             Upload Book
           </button>
+          {uploadStatus && <p className="mt-2">{uploadStatus}</p>}
         </form>
-        {uploadStatus && <p className="mt-2 text-green-500">{uploadStatus}</p>}
       </div>
     );
   };

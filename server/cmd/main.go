@@ -24,7 +24,7 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:5173",
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
-		AllowHeaders:     "Origin, Content-Type, Accept",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
 	}))
 	db := database.ConnectDB()
@@ -40,5 +40,6 @@ func main() {
 	app.Get("/user", controllers.GetUser)
 	app.Post("/logout", controllers.Logout)
 	app.Post("/book_url",controllers.GetBookURL)
+	app.Post("/save_book",controllers.SaveBook)
 	log.Fatal(app.Listen(":8080"))
 }

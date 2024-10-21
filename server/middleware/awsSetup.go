@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
+	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -20,6 +20,11 @@ var (
 
 type Presigner struct {
 	PresignClient *s3.PresignClient
+}
+
+type PresignedURLResponse struct {
+	PreSignedURL string `json:"preSignedUrl"`
+	ObjectURI    string `json:"objectUri"`
 }
 
 func InitAWS() error {
@@ -40,8 +45,7 @@ func InitAWS() error {
 	return nil
 }
 
-func GetPresignURL(fileName string) (string,error ){
-
+func GetPresignURL(fileName string) (PresignedURLResponse, error) {
 	presignClient := s3.NewPresignClient(s3Client)
 	presignedUrl, err := presignClient.PresignPutObject(context.Background(),
 		&s3.PutObjectInput{
@@ -50,7 +54,14 @@ func GetPresignURL(fileName string) (string,error ){
 		},
 		s3.WithPresignExpires(time.Minute*15))
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to generate presigned URL: %v", err)
+		return PresignedURLResponse{}, err
 	}
-	return presignedUrl.URL,nil
+
+
+
+	return PresignedURLResponse{
+		PreSignedURL: presignedUrl.URL,
+
+	}, nil
 }

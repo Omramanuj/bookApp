@@ -88,7 +88,8 @@ func Logout(c *fiber.Ctx) error {
 }
 
 func GetBookURL(c *fiber.Ctx) error {
-
+	
+	
 	type request struct {
 		FileName string `json:"filename"`
 	}
@@ -99,14 +100,23 @@ func GetBookURL(c *fiber.Ctx) error {
 	}
 
 
-	presignedUrl, err := middleware.GetPresignURL(req.FileName)
+	response, err := middleware.GetPresignURL(req.FileName)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate presigned URL"})
 	}
 
 	return c.JSON(fiber.Map{
-		"preSignedUrl": presignedUrl,
+		"preSignedUrl": response.PreSignedURL,
 		"fileName":     req.FileName,
 	})
-	
 }
+
+func GetUserIDFromToken(c *fiber.Ctx) (uint, error) {
+	cookie := c.Cookies("jwt")
+	userID, err := middleware.ValidateJWT(cookie)
+	if err != nil {
+		return 0, err
+	}
+	return uint(userID), nil
+}
+
