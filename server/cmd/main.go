@@ -41,5 +41,6 @@ func main() {
 	app.Post("/logout", controllers.Logout)
 	app.Post("/book_url",controllers.GetBookURL)
 	app.Post("/save_book",controllers.SaveBook)
+	app.Get("/books",controllers.GetBooks)
 	log.Fatal(app.Listen(":8080"))
 }

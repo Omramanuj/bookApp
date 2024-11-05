@@ -100,7 +100,7 @@ func GetBookURL(c *fiber.Ctx) error {
 	}
 
 
-	response, err := middleware.GetPresignURL(req.FileName)
+	response, err := middleware.PostPresignURL(req.FileName)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate presigned URL"})
 	}
