@@ -5,15 +5,18 @@ import Login from "./pages/loginPage";
 import OAuthCallback from "./components/oAuthCallback";
 import UserPage from "./pages/userPage";
 import BookPage from "./pages/bookPage";
+import EpubViewer from "./components/ePubView";
+import { ReactReaderPage } from "./components/reactReader";
 
 function App() {
 
-  // const isLoggedIn = localStorage.getItem('jwt');
+  const isLoggedIn = localStorage.getItem('jwt');
 
-  const isLoggedIn = true;
 
   return (
     <>
+
+      {/* <ReactReaderPage/> */}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login/>} />
@@ -31,7 +34,7 @@ function App() {
               : <Navigate to="/login" replace /> 
           }
         />
-      </Routes>
+      </Routes> 
     </>
   );
 }

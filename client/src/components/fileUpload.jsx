@@ -2,13 +2,38 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 
+
 const FileUpload = () => {
     const [file, setFile] = useState(null);
     const [uploadStatus, setUploadStatus] = useState('');
-
+    const [preview, setPreview] = useState('');
     const handleFileChange = (e) => {
-      setFile(e.target.files[0]);
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
+
+        if (selectedFile && selectedFile.name.endsWith('.epub')) {
+            extractEpubCover(selectedFile);
+        } else {
+            setPreview('');
+        }
     };
+    const extractEpubCover = (epubFile) => {
+        const fileReader = new FileReader();
+        fileReader.onload = async (event) => {
+            const buffer = event.target.result;
+           
+            import('epubjs').then((EPUB) => {
+                const book = EPUB.default(buffer);
+                book.loaded.cover.then((coverUrl) => {
+                    if (coverUrl) {
+                        setPreview(coverUrl);
+                    }
+                });
+            });
+        };
+        fileReader.readAsArrayBuffer(epubFile);
+    };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +52,7 @@ const FileUpload = () => {
                 
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
-                
+                console.log(data);
                 const uploadResponse = await fetch(data.preSignedUrl, {
                     method: 'PUT',
                     body: file,
@@ -39,6 +64,7 @@ const FileUpload = () => {
                 if (!uploadResponse.ok) throw new Error(uploadResponse.statusText);
                 
                 const URLofUploaded = uploadResponse.url;
+                console.log(URLofUploaded);
                 const saveBookResponse = await fetch('http://localhost:8080/save_book', {
                   method: 'POST',
                   headers: {
@@ -53,7 +79,7 @@ const FileUpload = () => {
 
                 const saveBookResult = await saveBookResponse.json();
                 if (!saveBookResponse.ok) throw new Error(saveBookResult.message);
-
+                console.log(saveBookResult);
                 setUploadStatus('File uploaded successfully!');
                 alert('File uploaded successfully!');
             } catch (error) {
@@ -83,6 +109,12 @@ const FileUpload = () => {
                 Upload EPUB
             </Button>
             <form onSubmit={handleSubmit}>
+            {file && (
+                    <div className="mt-4">
+                        <p>File Name: {file.name}</p>
+                        {preview && <img src={preview} alt="Book Cover" className="mt-2 max-h-40" />}
+                    </div>
+                )}
                 <button
                     type="submit"
                     className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors mt-2"

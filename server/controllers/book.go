@@ -1,21 +1,21 @@
 package controllers
 
 import (
-	"time"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/Omramanuj/bookApp/server/database"
 	"github.com/Omramanuj/bookApp/server/middleware"
 	"github.com/Omramanuj/bookApp/server/models"
 	"github.com/gofiber/fiber/v2"
-	
 )
 
 
 func SaveBook(c *fiber.Ctx) error {
 	
 		type request struct {
-			FileName string `json:"url"`
+			FileName string `json:"filename"`
 			Url string `json:"url"`
 		}
 
@@ -28,11 +28,11 @@ func SaveBook(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 		}
+		fmt.Println("Inside SaveBook function File Name is : ", req.FileName)
 
 		db := database.ConnectDB()
 		newBook := models.Book{
 			Title:         req.FileName, 
-			Author:        "Unknown Author", 
 			PublishedDate: time.Now(),
 			ISBN:          "Unknown ISBN", 
 			UserID:        userId,

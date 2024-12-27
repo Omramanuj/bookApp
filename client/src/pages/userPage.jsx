@@ -38,7 +38,6 @@ const fetchBooks =async() =>{
   const userData = {
     name: "John Doe",
     email: "john@example.com",
-    createdAt: "2024-01-01",
   };
 
 
@@ -49,8 +48,9 @@ const fetchBooks =async() =>{
   const navigate = useNavigate();
 
   const handleBookClick = (bookUrl) => {
+    console.log('Opening book:', bookUrl);
     localStorage.setItem('bookUrl', bookUrl);
-    navigate(`/epub-viewer`,`_blank`);
+    navigate(`/epub-viewer`);
 
   };
 

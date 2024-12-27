@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -94,12 +95,14 @@ func GetBookURL(c *fiber.Ctx) error {
 		FileName string `json:"filename"`
 	}
 
+
 	var req request
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-
+	fmt.Println("Inside GetBookURL function File Name is : ", req.FileName)
+	
 	response, err := middleware.PostPresignURL(req.FileName)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate presigned URL"})

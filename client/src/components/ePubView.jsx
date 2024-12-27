@@ -1,103 +1,61 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Book } from 'epubjs';
+import React, { useState } from 'react';
+import { ReactReader } from 'react-reader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const EpubViewer = () => {
-
-  const bookUrl=localStorage.getItem('bookUrl');
-  const viewerRef = useRef(null);
-  const [book, setBook] = useState(null);
+  // State management for the reader
+  const [location, setLocation] = useState(0);
   const [rendition, setRendition] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const navigate = useNavigate();
   
-  useEffect(() => {
-   
-    if(!bookUrl){
-      return;
-    }
+  // Get the book URL from localStorage or use the default
+  const bookUrl = localStorage.getItem('bookUrl') || "https://react-reader.metabits.no/files/alice.epub";
 
-    // Initialize EPUB
-    const initializeEpub = async () => {
-      try {
-        const newBook = new Book(bookUrl);
-        await newBook.ready;
-        
-        const newRendition = newBook.renderTo(viewerRef.current, {
-          width: '100%',
-          height: '600px',
-          spread: 'none',
-        });
-
-        await newRendition.display();
-
-        newRendition.on('rendered', () => {
-          setCurrentPage(newBook.locations.percentageFromCfi(newRendition.currentLocation().start.cfi) * totalPages);
-        });
-
-        setTotalPages(newBook.spine.length);
-
-        setBook(newBook);
-        setRendition(newRendition);
-      } catch (error) {
-        console.error('Error loading EPUB:', error);
-      }
-    };
-
-    initializeEpub();
-
-    return () => {
-      if (book) {
-        book.destroy();
-      }
-    };
-  }, [bookUrl]);
-
-  const goToNextPage = () => {
-    if (rendition && currentPage < totalPages - 1) {
-      rendition.next();
-      setCurrentPage((prev) => prev + 1);
+  // Function to handle page navigation within the book
+  const navigateBook = (direction) => {
+    if (rendition) {
+      direction === 'prev' ? rendition.prev() : rendition.next();
     }
   };
 
-  const goToPrevPage = () => {
-    if (rendition && currentPage > 0) {
-      rendition.prev();
-      setCurrentPage((prev) => prev - 1);
-    }
+  // Function to handle navigation back to dashboard
+  const returnToDashboard = () => {
+    navigate('/dashboard');
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardContent className="p-6">
-        <div 
-          ref={viewerRef} 
-          className="w-full border rounded-lg bg-white"
-        />
-        
-        <div className="flex items-center justify-between mt-4">
-          <Button
-            onClick={goToPrevPage}
-            disabled={currentPage === 0}
+    <Card className="w-full h-screen">
+      <CardContent className="p-0 relative h-full">
+        {/* Back to Dashboard button positioned at the top */}
+        <div className="absolute top-4 left-4 z-10">
+          <Button 
+            onClick={returnToDashboard} 
             variant="outline"
+            className="flex items-center gap-2"
           >
-            <ChevronLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+
+        {/* EPUB Reader component */}
+        <ReactReader
+          url={bookUrl}
+          location={location}
+          locationChanged={setLocation}
+          getRendition={setRendition}
+        />
+
+        {/* Navigation controls */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 bg-background/80 p-2">
+          <Button onClick={() => navigateBook('prev')} variant="outline">
             Previous
           </Button>
-          
-          <span className="text-sm">
-            Page {currentPage + 1} of {totalPages}
-          </span>
-          
-          <Button
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages - 1}
-            variant="outline"
-          >
+          <Button onClick={() => navigateBook('next')} variant="outline">
             Next
-            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </CardContent>
