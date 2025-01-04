@@ -43,12 +43,15 @@ const fetchBooks =async() =>{
 
   const handleDeleteBook = async (bookId) => {
     console.log('Deleting book:', bookId);
+
   };
 
   const navigate = useNavigate();
 
-  const handleBookClick = (bookUrl) => {
+  const handleBookClick = (bookUrl,bookId) => {
     console.log('Opening book:', bookUrl);
+    localStorage.setItem('bookId', bookId);
+    console.log('bookId:', bookId);
     localStorage.setItem('bookUrl', bookUrl);
     navigate(`/epub-viewer`);
 
@@ -66,14 +69,15 @@ const fetchBooks =async() =>{
 
         <div className="space-y-4">
           {books.map((book) => (
+            console.log(book),
             <a               
             
-            onClick={() => handleBookClick(book.presigned_url)} target="_blank">
+            onClick={() => handleBookClick(book.presigned_url, book.id)} target="_blank">
             <BookListItem
               key={book.id}
               book={book}
               onDelete={handleDeleteBook}
-              onClick={() => handleBookClick(book.presigned_url)}
+              onClick={() => handleBookClick(book.presigned_url, book.id)}
             />
             </a>
 

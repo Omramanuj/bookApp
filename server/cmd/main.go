@@ -26,7 +26,10 @@ func main() {
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
+		ExposeHeaders:    "Upgrade",
 	}))
+
+
 	db := database.ConnectDB()
 
 	database.Migrate(db)
@@ -42,5 +45,8 @@ func main() {
 	app.Post("/book_url",controllers.GetBookURL)
 	app.Post("/save_book",controllers.SaveBook)
 	app.Get("/books",controllers.GetBooks)
+	app.Put("/books/:id/progress", controllers.UpdateProgress)
+
+
 	log.Fatal(app.Listen(":8080"))
 }

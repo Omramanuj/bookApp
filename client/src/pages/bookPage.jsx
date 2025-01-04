@@ -1,4 +1,5 @@
 import EpubViewer from '@/components/ePubView'
+import { EPubReader } from '@/components/ePubViewtemp'
 import React from 'react'
 
 export default function BookPage() {
@@ -8,6 +9,7 @@ export default function BookPage() {
     <>
     <div className='w-full h-full'>
       <EpubViewer/>
+      {/* <EPubReader url={localStorage.getItem('bookUrl')} /> */}
     </div>
 
     </>

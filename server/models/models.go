@@ -22,4 +22,7 @@ type Book struct {
 	UserID        uint      `json:"user_id" gorm:"index"` 
 	URL           string    `json:"url"` 
 	CreatedAt     time.Time `json:"created_at" gorm:"autoCreateTime"`
+	TotalPage 	   int       `json:"total_page"`
+	CurrentPage    int       `json:"current_page"`
+	ProgressCFI    string    `json:"progress_cfi"`	
 }

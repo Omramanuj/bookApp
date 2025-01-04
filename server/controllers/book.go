@@ -11,6 +11,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type ProgressUpdateRequest struct {
+    TotalPage    int    `json:"total_page"`
+    CurrentPage  int    `json:"current_page"`
+    ProgressCFI  string `json:"progress_cfi"`
+}
+
 
 func SaveBook(c *fiber.Ctx) error {
 	
@@ -87,10 +93,61 @@ func SaveBook(c *fiber.Ctx) error {
 		}
 
 		booksResponse[i] = BookResponse{
-            Book:         book,
+            Book:         book,	
             PreSignedURL: presignedURL.PreSignedURL,
         }
 	}
 	log.Print(booksResponse)
 		return c.JSON(booksResponse)
-	}
+	}// Add this struct at the top with other imports
+
+
+// Add this new function
+func UpdateProgress(c *fiber.Ctx) error {
+    // Get book ID from params
+    bookId := c.Params("id")
+
+    // Parse request body
+    var progressReq ProgressUpdateRequest
+    if err := c.BodyParser(&progressReq); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "Invalid request body",
+        })
+    }
+
+    // Validate JWT
+    cookie := c.Cookies("jwt")
+    userId, err := middleware.ValidateJWT(cookie)
+    if err != nil {
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+            "error": "Unauthorized",
+        })
+    }
+
+    // Get database connection
+    db := database.ConnectDB()
+
+    // Find and update book
+    var book models.Book
+    if err := db.Where("id = ? AND user_id = ?", bookId, userId).First(&book).Error; err != nil {
+        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+            "error": "Book not found or unauthorized",
+        })
+    }
+
+    // Update progress
+    book.TotalPage = progressReq.TotalPage
+    book.CurrentPage = progressReq.CurrentPage
+    book.ProgressCFI = progressReq.ProgressCFI
+
+    if err := db.Save(&book).Error; err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+            "error": "Failed to update progress",
+        })
+    }
+
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{
+        "message": "Progress updated successfully",
+        "book": book,
+    })
+}
